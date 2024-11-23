@@ -1,5 +1,8 @@
 import { Express, Router } from 'express';
 import { RideController } from './ride.controller';
+import { validateDTO } from '../common/middleware/validateDto.middleware';
+import { EstimateRideDTO } from './dto/getEstimate.dto';
+import { CofirmRaceDTO } from './dto/confirmRace.dto';
 
 // Controller
 
@@ -10,13 +13,13 @@ export class RaceRouter {
 
   async execute() {
     // Post
-    this.productRouter.post('/estimate');
+    this.productRouter.post('/estimate', validateDTO(EstimateRideDTO), (req, res, next) => this.rideController.handlegetEstimate(req, res, next));
 
     // Patch
-    this.productRouter.patch('/confirm');
+    this.productRouter.patch('/confirm', validateDTO(CofirmRaceDTO), (req, res, next) => this.rideController.handleConfirmRide(req, res, next));
 
     // Get
-    this.productRouter.get('/ride/{customer_id}?driver_id={id do motorista}');
+    this.productRouter.get('/:customer_id', (req, res, next) => this.rideController.handleGetRaces(req, res, next));
 
     this.expressApp.use('/ride', this.productRouter);
   }

@@ -1,0 +1,25 @@
+-- CreateTable
+CREATE TABLE "Driver" (
+    "id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    "name" TEXT NOT NULL,
+    "description" TEXT NOT NULL,
+    "car" TEXT NOT NULL,
+    "avaliation" INTEGER NOT NULL,
+    "tax" REAL NOT NULL,
+    "minKm" REAL NOT NULL
+);
+
+-- CreateTable
+CREATE TABLE "User" (
+    "id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    "name" TEXT NOT NULL
+);
+
+-- CreateTable
+CREATE TABLE "Race" (
+    "id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    "driverId" INTEGER NOT NULL,
+    "userID" INTEGER NOT NULL,
+    CONSTRAINT "Race_driverId_fkey" FOREIGN KEY ("driverId") REFERENCES "Driver" ("id") ON DELETE RESTRICT ON UPDATE CASCADE,
+    CONSTRAINT "Race_userID_fkey" FOREIGN KEY ("userID") REFERENCES "User" ("id") ON DELETE RESTRICT ON UPDATE CASCADE
+);

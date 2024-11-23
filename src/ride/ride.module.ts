@@ -3,22 +3,25 @@ import { PrismaClient } from '@prisma/client';
 
 // Router
 import { RaceRouter } from './router';
+
+// Serice
 import { RideService } from './ride.service';
-import { RideController } from './ride.controller';
 
 // Controller
-
-// Service
+import { RideController } from './ride.controller';
 
 // Repository
+import { RideRepositoryImplementantion } from './repository/implementation/ride.respository.implementation';
+
+// Http client
+import { axiosClient } from '../common/clients/axios.client';
 
 export class rideModule {
-  constructor(private readonly prismaClient: PrismaClient) {}
+  constructor(private readonly prismaCliente: PrismaClient) {}
 
   start(app: Express) {
-    // const rideRespository = new RideRepository(this.prismaClient);
-
-    const rideService = new RideService();
+    const rideRepositoryImplementantion = new RideRepositoryImplementantion(axiosClient, this.prismaCliente);
+    const rideService = new RideService(rideRepositoryImplementantion);
     const rideController = new RideController(rideService);
     const raceRouter = new RaceRouter(app, rideController);
 

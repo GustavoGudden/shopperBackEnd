@@ -12,3 +12,47 @@ datasource db {
   provider = "sqlite"
   url      = env("DATABASE_URL")
 }
+
+model Driver {
+  id Int @id @default(autoincrement())
+
+  name String
+
+  description String
+
+  car String
+
+  avaliation Int
+
+  tax Float
+
+  minKm Float
+
+  race Race[]
+}
+
+model User {
+  id Int @id @default(autoincrement())
+
+  name String
+
+  race Race[]
+}
+
+model Race {
+  id Int @id @default(autoincrement())
+
+  driver   Driver @relation(fields: [driverId], references: [id])
+  driverId Int
+
+  user   User @relation(fields: [userID], references: [id])
+  userID Int
+
+  date DateTime
+
+  origin String
+
+  destination String
+
+  value Float
+}
