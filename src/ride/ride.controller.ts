@@ -11,6 +11,7 @@ export class RideController {
       const { origin, customer_id, destination } = req.body;
 
       const estimate = await this.rideService.getEstimate(req.body);
+      console.log(estimate);
 
       const AvaliableDrives = await this.rideService.getAvaliableDrivesWithTax(estimate);
 
