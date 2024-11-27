@@ -13,13 +13,13 @@ export class RaceRouter {
 
   async execute() {
     // Post
-    this.productRouter.post('/estimate', validateDTO(EstimateRideDTO), (req, res, next) => this.rideController.handlegetEstimate(req, res, next));
+    this.productRouter.post('/estimate', validateDTO(EstimateRideDTO), this.rideController.handlegetEstimate);
 
     // Patch
-    this.productRouter.patch('/confirm', validateDTO(CofirmRaceDTO), (req, res, next) => this.rideController.handleConfirmRide(req, res, next));
+    this.productRouter.patch('/confirm', validateDTO(CofirmRaceDTO), this.rideController.handleConfirmRide);
 
     // Get
-    this.productRouter.get('/:customer_id', (req, res, next) => this.rideController.handleGetRaces(req, res, next));
+    this.productRouter.get('/:customer_id', this.rideController.handleGetRaces);
 
     this.expressApp.use('/ride', this.productRouter);
   }

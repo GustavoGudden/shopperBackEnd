@@ -11,12 +11,12 @@ import { RideService } from './ride.service';
 import { RideController } from './ride.controller';
 
 // Repository
-import { RideRepositoryImplementantion } from './repository/implementation/ride.respository.implementation';
+import { RideRepositoryImplementantion } from '../repository/implementation/ride.respository.implementation';
 
 // Http client
 import { axiosClient } from '../common/clients/axios.client';
 
-export class rideModule {
+export class RideModule {
   constructor(private readonly prismaCliente: PrismaClient) {}
 
   start(app: Express) {

@@ -1,16 +1,19 @@
-import { Driver, Race } from '@prisma/client';
+import { Driver, Race, User } from '@prisma/client';
 import { EstimateRideDTO } from './dto/getEstimate.dto';
-import { RideRepositoryImplementantion } from './repository/implementation/ride.respository.implementation';
 import { IResponseDistance } from './types/api.response';
 import { convertMetersToKm } from '../common/ultils/convertMetersToKm';
 import { CofirmRaceDTO } from './dto/confirmRace.dto';
-import { HttpResponse } from './types/httpResponse';
+import { RideRepository } from '../repository/ride.repository';
+import { BadRequestException } from '../common/exceptions/badRequestException';
+import { NotFoundException } from '../common/exceptions/notFoundException';
 
 export class RideService {
-  constructor(private readonly rideRepositoryImplementantion: RideRepositoryImplementantion) {}
+  constructor(private readonly rideRepository: RideRepository) {}
 
   async getEstimate(estimate: EstimateRideDTO): Promise<any> {
-    return (await this.rideRepositoryImplementantion.fetchDistance(estimate)).routes[0];
+    const user = await this.getUserById(parseInt(estimate.customer_id));
+    if (!user) throw new NotFoundException('CUSTOMER_NOT_FOUND', 'Enter a valid user to continue the operation.');
+    return (await this.rideRepository.fetchDistance(estimate)).routes[0];
   }
 
   async getAvaliableDrivesWithTax(estimate: IResponseDistance) {
@@ -18,7 +21,7 @@ export class RideService {
 
     const KmDistance = convertMetersToKm(distanceMeters);
 
-    const avaliableDrives = await this.rideRepositoryImplementantion.getDrivesByMinDistance(KmDistance);
+    const avaliableDrives = await this.rideRepository.getDrivesByMinDistance(KmDistance);
 
     return avaliableDrives.map((drive: Driver) => {
       return {
@@ -36,36 +39,21 @@ export class RideService {
   }
 
   async getDriverById(Id: number): Promise<Driver | null> {
-    return await this.rideRepositoryImplementantion.getOneById(Id);
+    return await this.rideRepository.getOneById(Id);
+  }
+
+  async getUserById(id: number): Promise<User | null> {
+    return await this.rideRepository.getUserById(id);
   }
 
   async confirmRace(confirmRide: CofirmRaceDTO): Promise<any> {
-    if (JSON.stringify(confirmRide.origin) === JSON.stringify(confirmRide.destination)) {
-      return {
-        status: 400,
-        error_code: 'INVALID_DATA',
-        error_description: 'O local de origem não pode ser o mesmo que o destino. Por favor, verifique as informações e tente novamente.',
-      };
-    }
     const getDriver = await this.getDriverById(confirmRide.driver.id);
 
-    if (!getDriver) {
-      return {
-        status: 404,
-        error_code: 'DRIVER_NOT_FOUND',
-        error_description: 'Informe um motorista valido para continuar a operação.',
-      };
-    }
+    if (!getDriver) throw new NotFoundException('DRIVER_NOT_FOUND', 'Inform a valid driver to continue the operation.');
+    if (getDriver?.minKm > convertMetersToKm(confirmRide.distance))
+      throw new BadRequestException('INVALID_DISTANCE', 'The selected distance does not meet the drivers minimum requirements');
 
-    if (getDriver?.minKm > convertMetersToKm(confirmRide.distance)) {
-      return {
-        status: 404,
-        error_code: 'INVALID_DISTANCE',
-        error_description: 'The selected distance does not meet the drivers minimum requirements',
-      };
-    }
-
-    const saveRide = await this.rideRepositoryImplementantion.CreateRace(confirmRide, this.CalculatePrice(getDriver.tax, confirmRide.distance));
+    const saveRide = await this.rideRepository.createRace(confirmRide, this.CalculatePrice(getDriver.tax, confirmRide.distance));
 
     return {
       success: true,
@@ -75,21 +63,11 @@ export class RideService {
   async getClientRaces(filter: { customerId: number; driverId?: number }): Promise<any> {
     if (filter.driverId) {
       const driver = await this.getDriverById(filter.driverId);
-      if (!driver) {
-        return {
-          error_code: 'INVALID_DRIVER',
-          error_description: 'Informe um motorista valido para continuar a operação.',
-        };
-      }
+      if (!driver) throw new BadRequestException('INVALID_DRIVER', 'Informe um motorista valido para continuar a operação.');
     }
-    const response = await this.rideRepositoryImplementantion.getRacesByCustomerId(filter);
+    const response = await this.rideRepository.getRacesByCustomerId(filter);
 
-    if (response.length === 0) {
-      return {
-        error_description: 'NO_RIDES_FOUND',
-        error_code: 'No rides were found.',
-      };
-    }
+    if (response.length === 0) throw new NotFoundException('NO_RIDES_FOUND', 'No rides were found.');
 
     const format = await Promise.all(
       response.map(async (ride: Race) => {

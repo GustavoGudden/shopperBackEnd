@@ -9,8 +9,8 @@ export function validateDTO<T extends object>(dtoClass: new (...args: any[]) => 
       const errors = await validate(dtoInstance);
       if (errors.length > 0) {
         res.status(400).json({
-          message: 'Validation failed',
-          errors: errors.map((err) => Object.values(err.constraints || {})).flat(),
+          error_code: 'INVALID_DATA',
+          error_description: errors.map((err) => Object.values(err.constraints || {})).flat()[0],
         });
         return;
       }

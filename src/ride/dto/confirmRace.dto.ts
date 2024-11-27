@@ -1,5 +1,6 @@
 import { Type } from 'class-transformer';
-import { IsNotEmpty, IsNumber, IsString, ValidateNested } from 'class-validator';
+import { IsNotEmpty, IsNumber, IsString, Validate, ValidateNested } from 'class-validator';
+import { MatchConstraintDistance } from '../../common/constraints/matchConstraintDistance';
 
 export class LocationDTO {
   latitude!: number;
@@ -15,14 +16,21 @@ class DriverDto {
 }
 
 export class CofirmRaceDTO {
-  @IsNotEmpty()
   @IsNumber()
+  @IsNotEmpty()
   customer_id!: number;
 
   @ValidateNested()
   @Type(() => LocationDTO)
+  @Validate(MatchConstraintDistance)
   @IsNotEmpty()
   origin!: LocationDTO;
+
+  @IsNotEmpty()
+  destinationAdress!: string;
+
+  @IsNotEmpty()
+  originAdress!: string;
 
   @ValidateNested()
   @Type(() => LocationDTO)

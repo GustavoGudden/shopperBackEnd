@@ -3,7 +3,6 @@ import { IsNotEmpty, IsNumber, IsString, ValidateNested } from 'class-validator'
 
 export class LocationDTO {
   latitude!: number;
-
   longitude!: number;
 }
 

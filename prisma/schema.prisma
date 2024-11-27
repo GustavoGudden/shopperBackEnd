@@ -48,6 +48,10 @@ model Race {
   user   User @relation(fields: [userID], references: [id])
   userID Int
 
+  originAdress String    @default("Endereço desconhecido") 
+
+  destinationAdress String  @default("Endereço desconhecido")
+
   date DateTime
 
   origin String

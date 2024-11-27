@@ -1,31 +1,18 @@
-import express from 'express';
-import bodyParser from 'body-parser';
-import cors from 'cors';
 import 'reflect-metadata';
+import { connectToPrisma, getPrismaClient } from './common/clients/prisma.client';
+import { AppModule } from './app/app.module';
 
-// Prisma Client
-import { connectToPrisma, disconnectFromPrisma, getPrismaClient } from './common/clients/prisma.client';
-import { rideModule } from './ride/ride.module';
 import dotenv from 'dotenv';
 dotenv.config();
 
-async function bootstrap() {
-  const app = express();
-  app.use(bodyParser.json());
-  app.use(bodyParser.urlencoded({ extended: true }));
-  app.use(cors({ origin: '*' }));
-
+function bootstrap() {
   const prismaClient = getPrismaClient();
 
-  await connectToPrisma(prismaClient);
-
-  new rideModule(prismaClient).start(app);
-
-  app.listen(3000, () => {
-    console.log(`Example app listening on port 3000`);
-  });
-  process.on('beforeExit', async () => {
-    await disconnectFromPrisma(prismaClient);
+  connectToPrisma(prismaClient).then(() => {
+    new AppModule({
+      port: 3001,
+      ormClient: prismaClient,
+    });
   });
 }
 
