@@ -55,7 +55,6 @@ export class RideController {
         res.json(races).status(200);
         return;
       }
-
       const races = await this.rideService.getClientRaces({ customerId: parseInt(customer_id) });
       res.json(races).status(200);
     } catch (exception: any) {
